@@ -41,7 +41,7 @@ func main() {
 		if _, ok := commands[words[0]]; ok {
 		} else {
 			fmt.Fprintf(os.Stdout, "%s: command not found\n", words[0])
-			os.Exit(1)
+			// os.Exit(1)
 		}
 	}
 }
