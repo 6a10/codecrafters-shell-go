@@ -3,83 +3,18 @@ package main
 import (
 	"bufio"
 	"fmt"
+	cmd "github.com/codecrafters-io/shell-starter-go/cmd/commands"
 	"os"
-	_ "os/signal"
-	"strconv"
 	"strings"
-	_ "syscall"
 )
 
 var NotImplementedErr = fmt.Errorf("not implemented")
 
-type CommandResulter interface {
-	String() string
-	Value() uint8
+var commands = map[string]cmd.Command{"echo": cmd.EchoCmd{}, "cat": cmd.CatCmd{}, "exit": cmd.ExitCmd{}}
+
+func init() {
+	commands["type"] = &cmd.TypeCmd{CmdMap: commands}
 }
-
-type Command interface {
-	Run([]string) (CommandResulter, error)
-	SanitizeString(string) []string
-}
-
-type CmdResult struct {
-	Msg  string
-	Code uint8
-}
-
-func (c CmdResult) String() string {
-	return c.Msg
-}
-
-func (c CmdResult) Value() uint8 {
-	return c.Code
-}
-
-type Cmd struct{}
-
-func (c Cmd) Run(_ []string) (CommandResulter, error) {
-	return nil, NotImplementedErr
-}
-
-func (c Cmd) SanitizeString(s string) []string {
-	arr := strings.Split(strings.ReplaceAll(s, "\n", ""), " ")
-	result := make([]string, 0, len(arr))
-	for _, w := range arr {
-		if w != "" {
-			result = append(result, w)
-		}
-	}
-	return result
-}
-
-type ExitCmd struct {
-	Cmd
-	defaultExitCode int
-}
-
-func (ec ExitCmd) Run(args []string) (CommandResulter, error) {
-	var exitCode = ec.defaultExitCode
-	if len(args) != 0 {
-		i, err := strconv.Atoi(args[0])
-		if err != nil {
-			return &CmdResult{Msg: fmt.Sprintf("parsing \"%s\": invalid syntax", args[0]), Code: 1}, fmt.Errorf("ExitCmd: %w", err)
-		}
-		exitCode = i
-	}
-	os.Exit(exitCode)
-	return &CmdResult{}, nil
-}
-
-type EchoCmd struct {
-	Cmd
-}
-
-func (ec EchoCmd) Run(args []string) (CommandResulter, error) {
-	s := strings.Join(args, " ")
-	return &CmdResult{Msg: s, Code: 0}, nil
-}
-
-var commands = map[string]Command{"echo": EchoCmd{}, "cd": Cmd{}, "exit": ExitCmd{}}
 
 // var controls = map[string]error{"^C": fmt.Errorf("exit command"), "^D": fmt.Errorf("close command")}
 
