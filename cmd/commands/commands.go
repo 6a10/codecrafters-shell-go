@@ -120,3 +120,7 @@ func (tc *TypeCmd) Run(args []string) (CommandResulter, error) {
 	}
 	// return &CmdResult{Msg: "not implemented", Code: 1}, NotImplementedErr
 }
+
+func (tc TypeCmd) Description() string {
+	return "type is a shell builtin"
+}
