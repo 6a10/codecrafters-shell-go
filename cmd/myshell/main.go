@@ -5,15 +5,72 @@ import (
 	"fmt"
 	"os"
 	_ "os/signal"
+	"strconv"
 	"strings"
 	_ "syscall"
 )
 
-type Command interface{}
+var NotImplementedErr = fmt.Errorf("not implemented")
+
+type CommandResulter interface {
+	String() string
+	Value() uint8
+}
+
+type Command interface {
+	Run([]string) (CommandResulter, error)
+	SanitizeString(string) []string
+}
+
+type CmdResult struct {
+	Msg  string
+	Code uint8
+}
+
+func (c CmdResult) String() string {
+	return c.Msg
+}
+
+func (c CmdResult) Value() uint8 {
+	return c.Code
+}
 
 type Cmd struct{}
 
-var commands = map[string]Command{"echo": Cmd{}, "cd": Cmd{}}
+func (c Cmd) Run(_ []string) (CommandResulter, error) {
+	return nil, NotImplementedErr
+}
+
+func (c Cmd) SanitizeString(s string) []string {
+	arr := strings.Split(strings.ReplaceAll(s, "\n", ""), " ")
+	result := make([]string, 0, len(arr))
+	for _, w := range arr {
+		if w != "" {
+			result = append(result, w)
+		}
+	}
+	return result
+}
+
+type ExitCmd struct {
+	Cmd
+	defaultExitCode int
+}
+
+func (ec ExitCmd) Run(args []string) (CommandResulter, error) {
+	var exitCode = ec.defaultExitCode
+	if len(args) != 0 {
+		i, err := strconv.Atoi(args[0])
+		if err != nil {
+			return &CmdResult{Msg: fmt.Sprintf("parsing \"%s\": invalid syntax", args[0]), Code: 1}, fmt.Errorf("ExitCmd: %w", err)
+		}
+		exitCode = i
+	}
+	os.Exit(exitCode)
+	return &CmdResult{}, nil
+}
+
+var commands = map[string]Command{"echo": Cmd{}, "cd": Cmd{}, "exit": ExitCmd{}}
 
 // var controls = map[string]error{"^C": fmt.Errorf("exit command"), "^D": fmt.Errorf("close command")}
 
@@ -34,11 +91,23 @@ func main() {
 			os.Exit(1)
 		}
 
-		words := strings.Split(cmdString[:len(cmdString)-1], " ")
+		splited := strings.Split(cmdString[:len(cmdString)-1], " ")
+		words := make([]string, 0, len(splited))
+		for _, w := range splited {
+			if w != "" {
+				words = append(words, w)
+			}
+		}
 		if len(words) == 0 {
 			continue
 		}
-		if _, ok := commands[words[0]]; ok {
+		if cmd, ok := commands[words[0]]; ok {
+			res, err := cmd.Run(words[1:])
+			if err != nil {
+			} else {
+			}
+			fmt.Fprintf(os.Stdout, "%s\n", res.String())
+
 		} else {
 			fmt.Fprintf(os.Stdout, "%s: command not found\n", words[0])
 			// os.Exit(1)
