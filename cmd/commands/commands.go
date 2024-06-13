@@ -116,8 +116,13 @@ func (tc *TypeCmd) Run(args []string) (CommandResulter, error) {
 	if cmd, ok := tc.CmdMap[args[0]]; ok {
 		return &CmdResult{Msg: cmd.Description(), Code: 1}, nil
 	} else {
-		return &CmdResult{Msg: fmt.Sprintf("%s: not found", args[0]), Code: 1}, nil
+		pathRes := FindExec(args[0])
+		if pathRes != "" {
+			return &CmdResult{Msg: fmt.Sprintf("%s is %s", args[0], pathRes)}, nil
+		}
+		// return &CmdResult{Msg: fmt.Sprintf("%s: not found", args[0]), Code: 1}, nil
 	}
+	return &CmdResult{Msg: fmt.Sprintf("%s: not found", args[0]), Code: 1}, nil
 	// return &CmdResult{Msg: "not implemented", Code: 1}, NotImplementedErr
 }
 
