@@ -70,7 +70,16 @@ func (ec ExitCmd) Run(args []string) (CommandResulter, error) {
 	return &CmdResult{}, nil
 }
 
-var commands = map[string]Command{"echo": Cmd{}, "cd": Cmd{}, "exit": ExitCmd{}}
+type EchoCmd struct {
+	Cmd
+}
+
+func (ec EchoCmd) Run(args []string) (CommandResulter, error) {
+	s := strings.Join(args, " ")
+	return &CmdResult{Msg: s, Code: 0}, nil
+}
+
+var commands = map[string]Command{"echo": EchoCmd{}, "cd": Cmd{}, "exit": ExitCmd{}}
 
 // var controls = map[string]error{"^C": fmt.Errorf("exit command"), "^D": fmt.Errorf("close command")}
 
@@ -90,8 +99,9 @@ func main() {
 			fmt.Fprint(os.Stderr, "error reading command")
 			os.Exit(1)
 		}
+		cmdString = cmdString[:len(cmdString)-1]
 
-		splited := strings.Split(cmdString[:len(cmdString)-1], " ")
+		splited := strings.Split(cmdString, " ")
 		words := make([]string, 0, len(splited))
 		for _, w := range splited {
 			if w != "" {
