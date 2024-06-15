@@ -5,6 +5,7 @@ import (
 	"fmt"
 	cmd "github.com/codecrafters-io/shell-starter-go/cmd/commands"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -46,15 +47,26 @@ func main() {
 		if len(words) == 0 {
 			continue
 		}
-		if cmd, ok := commands[words[0]]; ok {
-			res, err := cmd.Run(words[1:])
+		if shellCmd, ok := commands[words[0]]; ok {
+			res, err := shellCmd.Run(words[1:])
 			if err != nil {
 			} else {
 			}
 			fmt.Fprintf(os.Stdout, "%s\n", res.String())
 
 		} else {
-			fmt.Fprintf(os.Stdout, "%s: command not found\n", words[0])
+			execPath := cmd.FindExec(words[0])
+			if execPath != "" {
+				c := exec.Command(execPath, words[1:]...)
+				c.Stdout = os.Stdout
+				c.Stderr = os.Stderr
+				err := c.Run()
+				if err != nil {
+					fmt.Fprintf(os.Stdout, err.Error())
+				}
+			} else {
+				fmt.Fprintf(os.Stdout, "%s: command not found\n", words[0])
+			}
 			// os.Exit(1)
 		}
 	}
