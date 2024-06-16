@@ -52,7 +52,9 @@ func main() {
 			if err != nil {
 			} else {
 			}
-			fmt.Fprintf(os.Stdout, "%s\n", res.String())
+			if res.String() != "" {
+				fmt.Fprintf(os.Stdout, "%s\n", res.String())
+			}
 
 		} else {
 			execPath := cmd.FindExec(words[0])
