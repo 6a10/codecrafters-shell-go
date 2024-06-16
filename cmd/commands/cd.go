@@ -20,6 +20,9 @@ func (_ CdCmd) Run(args []string) (CommandResulter, error) {
 	}
 	err := os.Chdir(args[0])
 	if err != nil {
+		if os.IsNotExist(err) {
+			return &CmdResult{Msg: fmt.Sprintf("%s: No such file or directory", args[0]), Code: 1}, err
+		}
 		return &CmdResult{Msg: err.Error(), Code: 1}, err
 	}
 	return &CmdResult{}, nil
