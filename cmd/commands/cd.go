@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type CdCmd struct {
@@ -18,7 +19,9 @@ func (_ CdCmd) Run(args []string) (CommandResulter, error) {
 		msg := "too many parameters"
 		return &CmdResult{Msg: msg, Code: 1}, fmt.Errorf(msg)
 	}
-	err := os.Chdir(args[0])
+	home := os.Getenv("HOME")
+	s := strings.ReplaceAll(args[0], "~", home)
+	err := os.Chdir(s)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return &CmdResult{Msg: fmt.Sprintf("%s: No such file or directory", args[0]), Code: 1}, err
