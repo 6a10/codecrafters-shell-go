@@ -11,7 +11,7 @@ import (
 
 var NotImplementedErr = fmt.Errorf("not implemented")
 
-var commands = map[string]cmd.Command{"echo": cmd.EchoCmd{}, "cat": cmd.CatCmd{}, "exit": cmd.ExitCmd{}, "pwd": cmd.PwdCmd{}}
+var commands = map[string]cmd.Command{"echo": cmd.EchoCmd{}, "cat": cmd.CatCmd{}, "exit": cmd.ExitCmd{}, "pwd": cmd.PwdCmd{}, "cd": cmd.CdCmd{}}
 
 func init() {
 	commands["type"] = &cmd.TypeCmd{CmdMap: commands}
